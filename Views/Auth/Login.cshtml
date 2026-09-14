@@ -1,0 +1,293 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS — Sign In</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* ── LEFT PANEL ── */
+        .left {
+            width: 55%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* floating orb decorations */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .orb1 { width: 180px; height: 180px; top: 60px;  right: 80px;  }
+        .orb2 { width: 100px; height: 100px; top: 200px; right: 200px; }
+        .orb3 { width: 130px; height: 130px; bottom: 120px; right: 60px; }
+        .orb4 { width:  60px; height:  60px; bottom: 280px; right: 220px; }
+        .orb5 { width:  80px; height:  80px; top: 350px; left: 60px; }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: #4f46e5;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #fff; font-weight: 700;
+        }
+        .brand-name { color: #fff; font-size: 22px; font-weight: 600; }
+        .brand-sub  { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+        .left h1 {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 16px;
+            position: relative; z-index: 1;
+        }
+        .left p {
+            color: rgba(255,255,255,0.6);
+            font-size: 15px;
+            line-height: 1.7;
+            max-width: 380px;
+            position: relative; z-index: 1;
+        }
+        .left-divider {
+            width: 48px; height: 3px;
+            background: #4f46e5;
+            border-radius: 2px;
+            margin-top: 28px;
+        }
+
+        /* ── RIGHT PANEL ── */
+        .right {
+            width: 45%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 56px;
+        }
+
+        .right h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 6px;
+        }
+        .right .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 36px;
+        }
+
+        /* error banner */
+        .error-banner {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+        .input-wrap svg {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            width: 16px; height: 16px;
+            stroke: #aaa;
+        }
+        input[type=text], input[type=password] {
+            width: 100%;
+            padding: 13px 14px 13px 42px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #111;
+            background: #fafafa;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        input:focus {
+            border-color: #4f46e5;
+            background: #fff;
+        }
+
+        .row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .forgot { font-size: 13px; color: #4f46e5; text-decoration: none; }
+        .forgot:hover { text-decoration: underline; }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 28px;
+            cursor: pointer;
+        }
+        .remember input { width: 15px; height: 15px; accent-color: #4f46e5; cursor: pointer; }
+
+        .btn-signin {
+            width: 100%;
+            padding: 14px;
+            background: #4f46e5;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            letter-spacing: 0.3px;
+        }
+        .btn-signin:hover { background: #4338ca; }
+
+        .secure-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #bbb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .secure-note svg { width: 13px; height: 13px; stroke: #bbb; }
+
+        .hint {
+            margin-top: 28px;
+            padding: 14px;
+            background: #f8f7ff;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.8;
+        }
+        .hint strong { color: #4f46e5; }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT -->
+    <div class="left">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+        <div class="orb orb4"></div>
+        <div class="orb orb5"></div>
+
+        <div class="brand">
+            <div class="brand-icon">T</div>
+            <div>
+                <div class="brand-name">TMS</div>
+                <div class="brand-sub">Tuition Management System</div>
+            </div>
+        </div>
+
+        <h1>Streamlined<br>Administration.</h1>
+        <p>Precise control over scheduling, student data, and financials — designed for modern tuition centres.</p>
+        <div class="left-divider"></div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+        <h2>Welcome to TMS</h2>
+        <p class="subtitle">Sign in to access your portal</p>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="error-banner">@ViewBag.Error</div>
+        }
+
+        @using (Html.BeginForm("Login", "Auth", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label>System ID</label>
+                <div class="input-wrap">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+                    <input type="text" name="systemId" placeholder="e.g. ADM-001" autocomplete="off" />
+                </div>
+                <small style="color:#aaa;font-size:11px;margin-top:5px;display:block">
+                    Prefix: ADM- (Admin) &nbsp;|&nbsp; TCe- (Teacher) &nbsp;|&nbsp; STD- (Student)
+                </small>
+            </div>
+
+            <div class="form-group">
+                <div class="row-between">
+                    <label style="margin-bottom:0">Password</label>
+                    <a href="#" class="forgot">Forgot password?</a>
+                </div>
+                <div class="input-wrap" style="margin-top:8px">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+                    <input type="password" name="password" placeholder="Enter your password" />
+                </div>
+            </div>
+
+            <label class="remember">
+                <input type="checkbox" name="rememberMe" />
+                Remember me on this device
+            </label>
+
+            <button type="submit" class="btn-signin">Sign In &rarr;</button>
+        }
+
+        <div class="secure-note">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            Secure AES-256 Encrypted Connection
+        </div>
+
+        <div class="hint">
+            <strong>Test accounts (after seeding):</strong><br>
+            ADM-001 &nbsp;/&nbsp; Admin@123 &nbsp;&mdash;&nbsp; Super Admin<br>
+            TCe-001 &nbsp;/&nbsp; Teacher@123 &nbsp;&mdash;&nbsp; Teacher<br>
+            STD-001 &nbsp;/&nbsp; Student@123 &nbsp;&mdash;&nbsp; Student
+        </div>
+    </div>
+
+</body>
+</html>
