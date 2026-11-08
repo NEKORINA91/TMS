@@ -27,6 +27,22 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MIAbd/Documents/C\#/TMS/Views/Expenses/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXhwZW5zZXNcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MIAbd/Documents/C\#/TMS/Views/Expenses/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXhwZW5zZXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MIAbd/Documents/C\#/TMS/Views/FeeCollections/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmVlQ29sbGVjdGlvbnNcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MIAbd/Documents/C\#/TMS/Views/FeeCollections/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmVlQ29sbGVjdGlvbnNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MIAbd/Documents/C\#/TMS/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

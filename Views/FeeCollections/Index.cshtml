@@ -1,0 +1,32 @@
+﻿@model List<TMS.Models.Domain.FeeCollection>
+
+<h2>Fee Collections</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Record New Payment</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Receipt No</th>
+            <th>Student</th>
+            <th>Class</th>
+            <th>Amount</th>
+            <th>Period</th>
+            <th>Status</th>
+            <th>Paid At</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var fee in Model)
+        {
+            <tr>
+                <td>@fee.ReceiptNo</td>
+                <td>@fee.Student?.User?.FullName</td>
+                <td>@fee.Class?.ClassName</td>
+                <td>Rs. @fee.Amount.ToString("N2")</td>
+                <td>@fee.PeriodMonth.ToString("MMM yyyy")</td>
+                <td>@fee.Status</td>
+                <td>@fee.PaidAt?.ToString("dd MMM yyyy")</td>
+            </tr>
+        }
+    </tbody>
+</table>
