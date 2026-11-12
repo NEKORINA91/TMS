@@ -3,15 +3,7 @@ using TMS.Helpers;
 
 namespace TMS.Controllers
 {
-    public class AdminDashboardController : Controller
-    {
-        public IActionResult Index()
-        {
-            var user = HttpContext.Session.GetSessionUser();
-            if (user == null) return RedirectToAction("Login", "Auth");
-            return Content($"Welcome {user.FullName}! Role: {user.Role} — Admin Dashboard coming soon.");
-        }
-    }
+   
 
     public class SuperAdminController : Controller
     {
