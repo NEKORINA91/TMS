@@ -1,0 +1,35 @@
+﻿@model List<TMS.Models.Domain.Class>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+<h2>Classes</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add Class</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Teacher</th>
+            <th>Day / Time</th>
+            <th>Room</th>
+            <th>Fee</th>
+            <th>Enrolled</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.ClassName</td>
+                <td>@c.Subject?.SubjectName @c.Subject?.Level</td>
+                <td>@c.Teacher?.User?.FullName</td>
+                <td>@c.DayOfWeek @c.StartTime.ToString(@"hh\:mm")–@c.EndTime.ToString(@"hh\:mm")</td>
+                <td>@c.Room</td>
+                <td>Rs. @c.MonthlyFee.ToString("N2")</td>
+                <td>@c.Enrollments.Count(e => e.IsActive) / @c.MaxCapacity</td>
+            </tr>
+        }
+    </tbody>
+</table>

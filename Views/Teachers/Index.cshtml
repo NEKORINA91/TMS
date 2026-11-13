@@ -1,0 +1,33 @@
+﻿@model List<TMS.Models.Domain.Teacher>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+<h2>Teachers</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add Teacher</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Qualifications</th>
+            <th>Contact</th>
+            <th>Commission</th>
+            <th>Payout</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.User.SystemId</td>
+                <td>@t.User.FullName</td>
+                <td>@t.Qualifications</td>
+                <td>@t.ContactNumber</td>
+                <td>@t.CommissionRate.ToString("0.##")%</td>
+                <td>@t.PayoutFrequency</td>
+            </tr>
+        }
+    </tbody>
+</table>

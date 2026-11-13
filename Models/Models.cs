@@ -41,12 +41,12 @@ namespace TMS.Models.Domain
     {
         [Key] public int TeacherId { get; set; }
         public int UserId { get; set; }
-        [MaxLength(200)] public string Qualifications  { get; set; }
-        [MaxLength(500)] public string ShortBio        { get; set; }
-        [MaxLength(20)]  public string ContactNumber   { get; set; }
+        [MaxLength(200)] public string? Qualifications  { get; set; }
+        [MaxLength(500)] public string? ShortBio        { get; set; }
+        [MaxLength(20)]  public string? ContactNumber   { get; set; }
         [Column(TypeName = "decimal(5,2)")] public decimal CommissionRate { get; set; } = 20.00m;
         [Required, MaxLength(20)] public string PayoutFrequency { get; set; } = "Monthly";
-        [MaxLength(100)] public string BankAccount { get; set; }
+        [MaxLength(100)] public string? BankAccount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public virtual User User { get; set; }
@@ -59,8 +59,8 @@ namespace TMS.Models.Domain
     {
         [Key] public int StudentId { get; set; }
         public int UserId { get; set; }
-        [MaxLength(300)] public string Address       { get; set; }
-        [MaxLength(20)]  public string GuardianPhone { get; set; }
+        [MaxLength(300)] public string? Address       { get; set; }
+        [MaxLength(20)]  public string? GuardianPhone { get; set; }
         public DateTime EnrolledAt { get; set; } = DateTime.Now;
 
         public virtual User User { get; set; }
@@ -73,7 +73,7 @@ namespace TMS.Models.Domain
     {
         [Key] public int SubjectId { get; set; }
         [Required, MaxLength(100)] public string SubjectName { get; set; }
-        [MaxLength(50)] public string Level { get; set; }
+        [MaxLength(50)] public string? Level { get; set; }
 
         public virtual ICollection<Class> Classes { get; set; }
     }
@@ -85,8 +85,8 @@ namespace TMS.Models.Domain
         public int TeacherId { get; set; }
         public int SubjectId { get; set; }
         [Required, MaxLength(150)] public string ClassName { get; set; }
-        [MaxLength(50)] public string DayOfWeek { get; set; }
-        [MaxLength(50)] public string Room      { get; set; }
+        [MaxLength(50)] public string? DayOfWeek { get; set; }
+        [MaxLength(50)] public string? Room      { get; set; }
         public TimeSpan StartTime  { get; set; }
         public TimeSpan EndTime    { get; set; }
         [Column(TypeName = "decimal(10,2)")] public decimal MonthlyFee  { get; set; } = 0;
