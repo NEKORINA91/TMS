@@ -39,7 +39,7 @@ namespace TMS.Helpers
             string prefix;
             if      (role == "SuperAdmin") prefix = "ADM";
             else if (role == "Admin")      prefix = "ADM";
-            else if (role == "Teacher")    prefix = "TCe";
+            else if (role == "Teacher")    prefix = "TCH";
             else if (role == "Student")    prefix = "STD";
             else                           prefix = "USR";
             return string.Format("{0}-{1:D3}", prefix, nextNumber);

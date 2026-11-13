@@ -87,8 +87,8 @@ namespace TMS.Controllers
 
         private IActionResult RedirectToDashboard(string role)
         {
-            if (role == "SuperAdmin") return RedirectToAction("Index", "SuperAdmin");
-            if (role == "Admin")      return RedirectToAction("Index", "AdminDashboard");
+            if (role == "SuperAdmin" || role == "Admin")
+                return RedirectToAction("Index", "AdminDashboard");
             if (role == "Teacher")    return RedirectToAction("Index", "TeacherDashboard");
             if (role == "Student")    return RedirectToAction("Index", "StudentDashboard");
             return RedirectToAction("Login");
