@@ -1,6 +1,19 @@
 ﻿@using TMS.Helpers
 @{
     var sessionUser = Context.Session.GetSessionUser();
+    bool isAdmin = sessionUser != null && (sessionUser.Role == "Admin" || sessionUser.Role == "SuperAdmin");
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    // (controller name, label, icon) - add a new line here for each new page
+    var links = new[]
+    {
+        ("AdminDashboard", "Dashboard",       "🏠"),
+        ("Students",       "Students",        "🎓"),
+        ("Teachers",       "Teachers",        "👩‍🏫"),
+        ("Classes",        "Classes",         "📚"),
+        ("FeeCollections", "Fee Collections", "💰"),
+        ("Expenses",       "Expenses",        "🧾")
+    };
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -14,41 +27,75 @@
     <link rel="stylesheet" href="~/TMS.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="/">TMS</a>
-                <ul class="navbar-nav flex-grow-1">
-                    @if (sessionUser != null && (sessionUser.Role == "Admin" || sessionUser.Role == "SuperAdmin"))
-                    {
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Teachers" asp-action="Index">Teachers</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Students" asp-action="Index">Students</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="AdminDashboard" asp-action="Index">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="FeeCollections" asp-action="Index">Fee Collections</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Expenses" asp-action="Index">Expenses</a></li>
-                    }
-                </ul>
-                @if (sessionUser != null)
-                {
-                    <form asp-controller="Auth" asp-action="Logout" method="post" class="d-flex align-items-center gap-2">
-                        <span class="text-muted small">@sessionUser.FullName (@sessionUser.Role)</span>
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">Sign out</button>
-                    </form>
-                }
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    @if (isAdmin)
+    {
+        <div class="d-flex">
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - TMS - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <!-- Sidebar: fixed on desktop, slide-out on phones -->
+            <div class="offcanvas-lg offcanvas-start border-end bg-white sidebar" tabindex="-1" id="sidebar"
+                 style="--bs-offcanvas-width: 260px;">
+                <div class="offcanvas-header d-lg-none">
+                    <h5 class="offcanvas-title">TMS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar"></button>
+                </div>
+                <div class="offcanvas-body d-flex flex-column p-3">
+                    <div class="d-none d-lg-block mb-3">
+                        <div class="fw-bold fs-5">TMS</div>
+                        <div class="text-muted small">Admin Suite</div>
+                    </div>
+
+                    <ul class="nav nav-pills flex-column gap-1">
+                        @foreach (var (c, label, icon) in links)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ctrl == c ? "active" : "")" asp-controller="@c" asp-action="Index">@icon&nbsp; @label</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="mt-auto pt-3 border-top">
+                        <div class="small text-muted mb-2">@sessionUser.FullName (@sessionUser.Role)</div>
+                        <form asp-controller="Auth" asp-action="Logout" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Sign out</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page area -->
+            <div class="flex-grow-1 main-area">
+                <nav class="navbar bg-white border-bottom d-lg-none px-3">
+                    <button class="btn btn-outline-secondary" type="button"
+                            data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Menu">
+                        ☰
+                    </button>
+                    <span class="navbar-brand mb-0 ms-2">TMS</span>
+                </nav>
+                <main role="main" class="p-3 p-lg-4">
+                    @RenderBody()
+                </main>
+            </div>
         </div>
-    </footer>
+    }
+    else
+    {
+        <nav class="navbar bg-white border-bottom mb-3 px-3">
+            <a class="navbar-brand" href="/">TMS</a>
+            @if (sessionUser != null)
+            {
+                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-flex align-items-center gap-2">
+                    <span class="text-muted small">@sessionUser.FullName (@sessionUser.Role)</span>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Sign out</button>
+                </form>
+            }
+        </nav>
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
