@@ -1,0 +1,30 @@
+﻿@model List<TMS.Models.Domain.Student>
+
+<h2>Students</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add Student</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Guardian Phone</th>
+            <th>Enrolled</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.User.SystemId</td>
+                <td>@s.User.FullName</td>
+                <td>@s.User.Email</td>
+                <td>@s.GuardianPhone</td>
+                <td>@s.EnrolledAt.ToString("dd MMM yyyy")</td>
+                <td>@(s.User.IsActive ? "Yes" : "No")</td>
+            </tr>
+        }
+    </tbody>
+</table>

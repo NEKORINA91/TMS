@@ -21,6 +21,7 @@
                 <ul class="navbar-nav flex-grow-1">
                     @if (sessionUser != null && (sessionUser.Role == "Admin" || sessionUser.Role == "SuperAdmin"))
                     {
+                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Students" asp-action="Index">Students</a></li>
                         <li class="nav-item"><a class="nav-link text-dark" asp-controller="AdminDashboard" asp-action="Index">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link text-dark" asp-controller="FeeCollections" asp-action="Index">Fee Collections</a></li>
                         <li class="nav-item"><a class="nav-link text-dark" asp-controller="Expenses" asp-action="Index">Expenses</a></li>

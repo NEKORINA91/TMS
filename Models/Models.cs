@@ -94,7 +94,7 @@ namespace TMS.Models.Domain
         public bool IsActive    { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public virtual Teacher Subject2  { get; set; }
+      
         public virtual Teacher Teacher   { get; set; }
         public virtual Subject Subject   { get; set; }
         public virtual ICollection<Enrollment>    Enrollments    { get; set; }
