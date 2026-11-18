@@ -1,0 +1,41 @@
+﻿@model List<TMS.Models.Domain.Enrollment>
+@{
+    ViewData["Title"] = "Enrollments";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+<h2>Enrollments</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Enroll Student</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Student</th>
+            <th>Class</th>
+            <th>Enrolled On</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr>
+                <td>@e.Student?.User?.SystemId</td>
+                <td>@e.Student?.User?.FullName</td>
+                <td>@e.Class?.ClassName</td>
+                <td>@e.EnrolledDate.ToString("dd MMM yyyy")</td>
+                <td>
+                    <form asp-action="Remove" asp-route-id="@e.EnrollmentId" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Remove this enrollment?');">
+                            Remove
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

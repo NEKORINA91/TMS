@@ -1,0 +1,74 @@
+﻿@model List<AttendanceRow>
+@{
+    ViewData["Title"] = "Attendance";
+    var classes = ViewBag.Classes;
+    int? classId = ViewBag.ClassId;
+    var day = (DateTime)ViewBag.Date;
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<h2>Attendance</h2>
+
+<form method="get" asp-action="Index" class="row g-2 mb-4">
+    <div class="col-md-5">
+        <select name="classId" class="form-select" required>
+            <option value="">-- Select Class --</option>
+            @foreach (var c in classes)
+            {
+                <option value="@c.ClassId" selected="@(classId == (int)c.ClassId)">@c.ClassName</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="date" value="@day.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">Load</button>
+    </div>
+</form>
+
+@if (classId != null)
+{
+    if (!Model.Any())
+    {
+        <div class="alert alert-info">No students are enrolled in this class yet.</div>
+    }
+    else
+    {
+        <form asp-action="Save" method="post">
+            <input type="hidden" name="classId" value="@classId" />
+            <input type="hidden" name="date" value="@day.ToString("yyyy-MM-dd")" />
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td>@r.SystemId</td>
+                            <td>@r.StudentName</td>
+                            <td><input type="radio" name="status[@r.EnrollmentId]" value="Present" checked="@(r.Status != "Absent")" /></td>
+                            <td><input type="radio" name="status[@r.EnrollmentId]" value="Absent" checked="@(r.Status == "Absent")" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <button type="submit" class="btn btn-primary">Save Attendance</button>
+        </form>
+    }
+}

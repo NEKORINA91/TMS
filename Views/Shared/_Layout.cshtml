@@ -7,13 +7,23 @@
     // (controller name, label, icon) - add a new line here for each new page
     var links = new[]
     {
-        ("AdminDashboard", "Dashboard",       "🏠"),
-        ("Students",       "Students",        "🎓"),
-        ("Teachers",       "Teachers",        "👩‍🏫"),
-        ("Classes",        "Classes",         "📚"),
-        ("FeeCollections", "Fee Collections", "💰"),
-        ("Expenses",       "Expenses",        "🧾")
+        ("AdminDashboard", "Dashboard"),
+        ("Students",       "Students"),
+        ("Teachers",       "Teachers"),
+        ("Classes",        "Classes"),
+        ("FeeCollections", "Fee Collections"),
+        ("Expenses",       "Expenses"),
+        ("Enrollments",    "Enrollments"),
+        ("Attendance",     "Attendance")
     };
+
+    string initials = "";
+    if (sessionUser != null)
+    {
+        var parts = sessionUser.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        initials = string.Concat(parts.Take(2).Select(p => char.ToUpper(p[0])));
+    }
+
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -45,31 +55,47 @@
                     </div>
 
                     <ul class="nav nav-pills flex-column gap-1">
-                        @foreach (var (c, label, icon) in links)
+                        @foreach (var (c, label) in links)
                         {
                             <li class="nav-item">
-                                <a class="nav-link @(ctrl == c ? "active" : "")" asp-controller="@c" asp-action="Index">@icon&nbsp; @label</a>
+                                <a class="nav-link @(ctrl == c ? "active" : "")" asp-controller="@c" asp-action="Index">@label</a>
                             </li>
                         }
                     </ul>
 
-                    <div class="mt-auto pt-3 border-top">
-                        <div class="small text-muted mb-2">@sessionUser.FullName (@sessionUser.Role)</div>
-                        <form asp-controller="Auth" asp-action="Logout" method="post">
-                            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Sign out</button>
-                        </form>
-                    </div>
+                    
                 </div>
             </div>
 
             <!-- Page area -->
             <div class="flex-grow-1 main-area">
-                <nav class="navbar bg-white border-bottom d-lg-none px-3">
-                    <button class="btn btn-outline-secondary" type="button"
-                            data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Menu">
-                        ☰
-                    </button>
-                    <span class="navbar-brand mb-0 ms-2">TMS</span>
+                <nav class="navbar bg-white border-bottom px-3">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-outline-secondary d-lg-none me-2" type="button"
+                                data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Menu">
+                            ☰
+                        </button>
+                        <span class="navbar-brand mb-0 d-lg-none">TMS</span>
+                    </div>
+
+                    <div class="dropdown ms-auto">
+                        <button class="avatar-btn" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false" title="@sessionUser.FullName">
+                            @initials
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li class="px-3 py-2">
+                                <div class="fw-semibold">@sessionUser.FullName</div>
+                                <div class="small text-muted">@sessionUser.Role · @sessionUser.SystemId</div>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="px-3 pb-1">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Sign out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </nav>
                 <main role="main" class="p-3 p-lg-4">
                     @RenderBody()
