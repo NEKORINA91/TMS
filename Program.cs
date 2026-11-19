@@ -20,6 +20,8 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddHostedService<TMS.Helpers.AttendanceAutoAbsentService>();
+
 var app = builder.Build();
 
 // ── Middleware pipeline

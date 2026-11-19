@@ -2,19 +2,28 @@
 @{
     ViewData["Title"] = "Attendance";
     var classes = ViewBag.Classes;
+    var running = ViewBag.Running;
     int? classId = ViewBag.ClassId;
     var day = (DateTime)ViewBag.Date;
 }
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
 
-<h2>Attendance <a asp-action="Scan" class="btn btn-outline-primary mb-3">Scan QR codes</a> </h2>
+<h2>Attendance</h2>
+<a asp-action="Scan" class="btn btn-outline-primary mb-3">Scan QR codes</a>
+
+<form id="tokenForm">@Html.AntiForgeryToken()</form>
+
+@if (running != null && running.Count > 0)
+{
+    <div class="mb-3">
+        <span class="text-muted me-2">Running now:</span>
+        @foreach (var c in running)
+        {
+            <a asp-action="Index" asp-route-classId="@c.ClassId" class="btn btn-sm btn-primary me-1">
+                @c.ClassName (@c.StartTime.ToString("hh\\:mm")-@c.EndTime.ToString("hh\\:mm"))
+            </a>
+        }
+    </div>
+}
 
 <form method="get" asp-action="Index" class="row g-2 mb-4">
     <div class="col-md-5">
@@ -22,7 +31,7 @@
             <option value="">-- Select Class --</option>
             @foreach (var c in classes)
             {
-                <option value="@c.ClassId" selected="@(classId == (int)c.ClassId)">@c.ClassName</option>
+                <!option value="@c.ClassId" @(classId == c.ClassId ? "selected" : "")>@c.ClassName</!option>
             }
         </select>
     </div>
@@ -42,33 +51,83 @@
     }
     else
     {
-        <form asp-action="Save" method="post">
-            <input type="hidden" name="classId" value="@classId" />
-            <input type="hidden" name="date" value="@day.ToString("yyyy-MM-dd")" />
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+            <input class="form-control" style="max-width:300px" placeholder="Search by ID or name..." data-filter-table="attTable" />
+            <span class="ms-auto">Present: <b id="cntP">0</b> &nbsp; Absent: <b id="cntA">0</b></span>
+        </div>
+        <p class="text-muted small">
+            Students are marked Absent automatically when the class starts. A scan marks them Present.
+            If someone's phone does not work, find them here and switch them to Present.
+        </p>
 
-            <table class="table table-striped">
-                <thead>
+        <table class="table table-striped" id="attTable">
+            <thead><tr><th>Student ID</th><th>Student</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    bool on = r.Status == "Present";
                     <tr>
-                        <th>Student ID</th>
-                        <th>Student</th>
-                        <th>Present</th>
-                        <th>Absent</th>
+                        <td>@r.SystemId</td>
+                        <td>@r.StudentName</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input att-switch" type="checkbox" role="switch"
+                                       data-enrollment="@r.EnrollmentId" checked="@on" />
+                                <label class="form-check-label status-text">@(r.Status ?? "Not marked")</label>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var r in Model)
-                    {
-                        <tr>
-                            <td>@r.SystemId</td>
-                            <td>@r.StudentName</td>
-                            <td><input type="radio" name="status[@r.EnrollmentId]" value="Present" checked="@(r.Status != "Absent")" /></td>
-                            <td><input type="radio" name="status[@r.EnrollmentId]" value="Absent" checked="@(r.Status == "Absent")" /></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            <button type="submit" class="btn btn-primary">Save Attendance</button>
-        </form>
+                }
+            </tbody>
+        </table>
     }
+}
+
+@section Scripts {
+    <script>
+        const table = document.getElementById('attTable');
+        if (table) {
+            const token = document.querySelector('#tokenForm input[name="__RequestVerificationToken"]').value;
+
+            function refresh() {
+                const all = table.querySelectorAll('.att-switch');
+                let p = 0;
+                all.forEach(s => { if (s.checked) p++; });
+                document.getElementById('cntP').textContent = p;
+                document.getElementById('cntA').textContent = all.length - p;
+            }
+
+            table.addEventListener('change', async e => {
+                const sw = e.target.closest('.att-switch');
+                if (!sw) return;
+                const present = sw.checked;
+                sw.disabled = true;
+                try {
+                    const res = await fetch('@Url.Action("SetStatus", "Attendance")', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token },
+                        body: new URLSearchParams({
+                            enrollmentId: sw.dataset.enrollment,
+                            date: '@day.ToString("yyyy-MM-dd")',
+                            present: present
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        sw.parentElement.querySelector('.status-text').textContent = present ? 'Present' : 'Absent';
+                    } else {
+                        sw.checked = !present;
+                        alert(data.message);
+                    }
+                } catch (err) {
+                    sw.checked = !present;
+                    alert('Could not save. Please try again.');
+                }
+                sw.disabled = false;
+                refresh();
+            });
+
+            refresh();
+        }
+    </script>
 }

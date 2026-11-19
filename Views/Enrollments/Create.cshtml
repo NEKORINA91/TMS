@@ -1,21 +1,17 @@
 ﻿@{
     ViewData["Title"] = "Enroll Student";
-    var students = ViewBag.Students;
     var classes = ViewBag.Classes;
 }
 <h2>Enroll Student</h2>
 <div asp-validation-summary="All" class="text-danger mb-2"></div>
 
 <form asp-action="Create" method="post">
-    <div class="mb-3">
-        <label>Student</label>
-        <select name="studentId" class="form-select" required>
-            <option value="">-- Select Student --</option>
-            @foreach (var s in students)
-            {
-                <option value="@s.StudentId">@s.FullName</option>
-            }
-        </select>
+    <div class="mb-3 position-relative">
+        <label>Student (search by name or ID)</label>
+        <input type="text" id="studentSearch" class="form-control" placeholder="Start typing a name or ID..." autocomplete="off" />
+        <input type="hidden" name="studentId" id="studentId" />
+        <div id="results" class="list-group position-absolute w-100" style="z-index:10;"></div>
+        <div id="picked" class="form-text"></div>
     </div>
 
     <div class="mb-3">
@@ -32,3 +28,45 @@
     <button type="submit" class="btn btn-primary">Enroll</button>
     <a asp-action="Index" class="btn btn-link">Cancel</a>
 </form>
+
+@section Scripts {
+    <script>
+        const box = document.getElementById('studentSearch');
+        const hid = document.getElementById('studentId');
+        const res = document.getElementById('results');
+        const picked = document.getElementById('picked');
+        let timer;
+
+        box.addEventListener('input', () => {
+            hid.value = '';
+            picked.textContent = '';
+            clearTimeout(timer);
+            const q = box.value.trim();
+            if (!q) { res.innerHTML = ''; return; }
+
+            timer = setTimeout(async () => {
+                const r = await fetch('@Url.Action("SearchStudents", "Enrollments")?q=' + encodeURIComponent(q));
+                const list = await r.json();
+                res.innerHTML = '';
+                list.forEach(s => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'list-group-item list-group-item-action';
+                    b.textContent = s.text;
+                    b.onclick = () => {
+                        hid.value = s.id;
+                        box.value = s.text;
+                        picked.textContent = 'Selected: ' + s.text;
+                        res.innerHTML = '';
+                    };
+                    res.appendChild(b);
+                });
+                if (!list.length) res.innerHTML = '<div class="list-group-item text-muted">No student found</div>';
+            }, 250);
+        });
+
+        document.querySelector('form').addEventListener('submit', e => {
+            if (!hid.value) { e.preventDefault(); picked.textContent = 'Please pick a student from the list.'; }
+        });
+    </script>
+}

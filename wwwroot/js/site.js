@@ -1,4 +1,9 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
+﻿// Live search: an input with data-filter-table="tableId" hides rows that don't match
+document.addEventListener('input', function (e) {
+    var box = e.target.closest('[data-filter-table]');
+    if (!box) return;
+    var q = box.value.toLowerCase();
+    document.querySelectorAll('#' + box.dataset.filterTable + ' tbody tr').forEach(function (tr) {
+        tr.style.display = tr.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none';
+    });
+});

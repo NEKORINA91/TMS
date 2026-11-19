@@ -3,7 +3,9 @@
 <h2>Fee Collections</h2>
 <a asp-action="Create" class="btn btn-primary mb-3">+ Record New Payment</a>
 
-<table class="table table-striped">
+<input class="form-control mb-3" style="max-width:320px" placeholder="Search..." data-filter-table="listTable" />
+
+<table class="table table-striped" id="listTable">
     <thead>
         <tr>
             <th>Receipt No</th>

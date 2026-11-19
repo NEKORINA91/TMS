@@ -1,29 +1,13 @@
 ﻿@{
     ViewData["Title"] = "Scan Attendance";
-    var classes = ViewBag.Classes;
-    var day = (DateTime)ViewBag.Date;
 }
 
-<h2 class="mb-3">Scan Attendance</h2>
+<h2 class="mb-1">Scan Attendance</h2>
+<p class="text-muted mb-1" id="clock"></p>
+<p class="text-muted">Each student is marked in the class they have today at this time.</p>
 <p><a asp-action="Index">&larr; Manual attendance</a></p>
 
 <form id="tokenForm">@Html.AntiForgeryToken()</form>
-
-<div class="row g-2 mb-3">
-    <div class="col-md-5">
-        <select id="classId" class="form-select">
-            <option value="">-- Select Class --</option>
-            @foreach (var c in classes)
-            {
-                <option value="@c.ClassId">@c.ClassName</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-3">
-        <input type="date" id="scanDate" class="form-control"
-               value="@day.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
-    </div>
-</div>
 
 <div class="row">
     <div class="col-md-6">
@@ -48,6 +32,9 @@
         let lastCode = '';
         let lastTime = 0;
 
+        function tick() { document.getElementById('clock').textContent = new Date().toLocaleString(); }
+        tick(); setInterval(tick, 20000);
+
         function addLog(ok, text) {
         const li = document.createElement('li');
         li.className = 'list-group-item ' + (ok ? 'list-group-item-success' : 'list-group-item-danger');
@@ -56,14 +43,10 @@
         }
 
         async function mark(code) {
-        const classId = document.getElementById('classId').value;
-        const date = document.getElementById('scanDate').value;
-        if (!classId) { addLog(false, 'Select a class first.'); return; }
-
         const res = await fetch('@Url.Action("ScanMark", "Attendance")', {
         method: 'POST',
         headers: { 'RequestVerificationToken': token },
-        body: new URLSearchParams({ classId: classId, date: date, code: code })
+        body: new URLSearchParams({ code: code })
         });
         const data = await res.json();
         addLog(data.ok, data.ok ? data.name + ' - ' + data.message : data.message);

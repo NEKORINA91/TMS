@@ -110,5 +110,21 @@ namespace TMS.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // GET: /Enrollments/SearchStudents?q=kas
+        public async Task<IActionResult> SearchStudents(string q)
+        {
+            q = (q ?? "").Trim();
+            if (q.Length == 0) return Json(new object[0]);
+
+            var list = await _db.Students
+                .Where(s => s.User.FullName.Contains(q) || s.User.SystemId.Contains(q))
+                .OrderBy(s => s.User.FullName)
+                .Take(10)
+                .Select(s => new { id = s.StudentId, text = s.User.SystemId + " - " + s.User.FullName })
+                .ToListAsync();
+
+            return Json(list);
+        }
     }
 }
