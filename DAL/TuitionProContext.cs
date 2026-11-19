@@ -18,6 +18,8 @@ namespace TMS.DAL
         public DbSet<FeeCollection>    FeeCollections    { get; set; }
         public DbSet<Expense>          Expenses          { get; set; }
         public DbSet<TeacherPayout>    TeacherPayouts    { get; set; }
+        public DbSet<CalendarEvent> CalendarEvents       { get; set; }
+        public DbSet<ClassCancellation> ClassCancellations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

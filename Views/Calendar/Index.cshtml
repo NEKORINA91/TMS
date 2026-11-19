@@ -1,0 +1,413 @@
+﻿@{
+    ViewData["Title"] = "Calendar";
+    string role = ViewBag.Role ?? "";
+    bool isAdmin = role == "Admin" || role == "SuperAdmin";
+}
+<style>
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        border-top: 1px solid #dee2e6;
+        border-left: 1px solid #dee2e6;
+        background: #fff;
+    }
+
+    .cal-head {
+        padding: .5rem;
+        font-size: .75rem;
+        font-weight: 600;
+        text-align: center;
+        background: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .cal-cell {
+        min-height: 125px;
+        padding: .25rem;
+        border-right: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+        overflow: hidden;
+    }
+
+        .cal-cell.other {
+            background: #fafafa;
+        }
+
+        .cal-cell.today .num {
+            background: #4f46e5;
+            color: #fff;
+            border-radius: 50%;
+            display: inline-block;
+            width: 1.6rem;
+            height: 1.6rem;
+            text-align: center;
+            line-height: 1.6rem;
+        }
+
+        .cal-cell.k-Holiday {
+            background: #fdecec;
+        }
+
+        .cal-cell.k-Event {
+            background: #fff7df;
+        }
+
+        .cal-cell.k-Exam {
+            background: #e8f0fe;
+        }
+
+    .num {
+        font-size: .85rem;
+        font-weight: 600;
+    }
+
+    .chip {
+        display: block;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        border-radius: .25rem;
+        padding: .1rem .35rem;
+        margin-top: 2px;
+        font-size: .72rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+    }
+
+        .chip.std {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .chip.mine {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .chip.busy {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .chip.cancel {
+            background: #b91c1c;
+            color: #fff;
+            text-decoration: line-through;
+        }
+
+        .chip.ev {
+            background: #fde68a;
+            color: #78350f;
+        }
+
+        .chip.hol {
+            background: #dc2626;
+            color: #fff;
+        }
+
+    .dot {
+        display: inline-block;
+        width: .7rem;
+        height: .7rem;
+        border-radius: 50%;
+        margin-right: .35rem;
+    }
+
+    @@media (max-width: 767px) {
+        .cal-cell {
+            min-height: 70px;
+        }
+    }
+</style>
+
+<form id="tokenForm">@Html.AntiForgeryToken()</form>
+
+<div class="row g-3">
+    <div class="col-lg-9">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <button class="btn btn-outline-secondary" id="prev">&larr;</button>
+            <button class="btn btn-outline-secondary" id="next">&rarr;</button>
+            <button class="btn btn-outline-primary" id="todayBtn">Today</button>
+            <h3 class="mb-0 ms-2" id="monthLabel"></h3>
+        </div>
+        <div class="cal-grid" id="grid"></div>
+    </div>
+
+    <div class="col-lg-3">
+        @if (isAdmin)
+        {
+            <div class="card p-3 mb-3">
+                <h6>Filter by teacher</h6>
+                <select id="teacherFilter" class="form-select"><option value="">All teachers</option></select>
+            </div>
+            <div class="card p-3 mb-3">
+                <h6>Add event / holiday</h6>
+                <form id="eventForm">
+                    <input name="title" class="form-control mb-2" maxlength="150" placeholder="Title" required />
+                    <input name="date" type="date" class="form-control mb-2" required />
+                    <select name="kind" class="form-select mb-2">
+                        <option>Holiday</option>
+                        <option>Event</option>
+                        <option>Exam</option>
+                    </select>
+                    <input name="notes" class="form-control mb-2" maxlength="300" placeholder="Notes (optional)" />
+                    <button class="btn btn-primary w-100">Add</button>
+                    <div id="evMsg" class="small mt-2"></div>
+                </form>
+            </div>
+        }
+
+        <div class="card p-3 mb-3">
+            <h6>Legend</h6>
+            @if (role == "Teacher")
+            {
+                <div><span class="dot" style="background:#10b981"></span>Your classes</div>
+                <div><span class="dot" style="background:#ef4444"></span>Other teachers' classes (room busy)</div>
+            }
+            else
+            {
+                <div><span class="dot" style="background:#6366f1"></span>Classes</div>
+            }
+            <div><span class="dot" style="background:#b91c1c"></span>Cancelled class</div>
+            <div><span class="dot" style="background:#dc2626"></span>Holiday</div>
+            <div><span class="dot" style="background:#f59e0b"></span>Event</div>
+            <div><span class="dot" style="background:#3b82f6"></span>Exam</div>
+        </div>
+
+        <div class="card p-3">
+            <h6>Cancellations this month</h6>
+            <ul class="list-unstyled small mb-0" id="cancelList"></ul>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="classModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="mBody"></div>
+                <div id="cancelBox" class="mt-3 d-none">
+                    <label class="form-label">Reason (optional)</label>
+                    <input id="reason" class="form-control" maxlength="200" />
+                </div>
+                <div id="mMsg" class="small text-danger mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnCancel" class="btn btn-danger d-none">Cancel this class</button>
+                <button id="btnRestore" class="btn btn-outline-success d-none">Restore class</button>
+                <button id="btnDeleteEvent" class="btn btn-outline-danger d-none">Delete event</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const role = '@role';
+        const isAdmin = @(isAdmin ? "true" : "false");
+        const $ = id => document.getElementById(id);
+        const token = document.querySelector('#tokenForm input[name="__RequestVerificationToken"]').value;
+        const modal = new bootstrap.Modal($('classModal'));
+
+        const pad = n => String(n).padStart(2, '0');
+        const ymd = (y, m, d) => y + '-' + pad(m + 1) + '-' + pad(d);
+        const t0 = new Date();
+        const todayStr = ymd(t0.getFullYear(), t0.getMonth(), t0.getDate());
+
+        let cur = new Date(t0.getFullYear(), t0.getMonth(), 1);
+        let data = { items: [], events: [] };
+        let selected = null;
+
+        async function post(url, obj) {
+            const r = await fetch(url, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token },
+                body: new URLSearchParams(obj)
+            });
+            return r.json();
+        }
+
+        async function load() {
+            const m = cur.getFullYear() + '-' + pad(cur.getMonth() + 1);
+            const r = await fetch('@Url.Action("Data", "Calendar")?month=' + m);
+            data = await r.json();
+            fillTeachers();
+            render();
+        }
+
+        function fillTeachers() {
+            const sel = $('teacherFilter');
+            if (!sel) return;
+            const keep = sel.value;
+            const names = [...new Set(data.items.map(i => i.teacher))].sort();
+            sel.replaceChildren(new Option('All teachers', ''));
+            names.forEach(n => sel.appendChild(new Option(n, n)));
+            sel.value = names.includes(keep) ? keep : '';
+        }
+
+        function chip(parent, text, cls, onClick) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = cls;
+            b.textContent = text;
+            b.title = text;
+            b.addEventListener('click', onClick);
+            parent.appendChild(b);
+        }
+
+        function render() {
+            const y = cur.getFullYear(), m = cur.getMonth();
+            $('monthLabel').textContent = cur.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            const grid = $('grid');
+            grid.replaceChildren();
+            ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].forEach(n => {
+                const h = document.createElement('div');
+                h.className = 'cal-head'; h.textContent = n;
+                grid.appendChild(h);
+            });
+
+            const first = new Date(y, m, 1).getDay();
+            const days = new Date(y, m + 1, 0).getDate();
+            const filter = $('teacherFilter') ? $('teacherFilter').value : '';
+            const cells = Math.ceil((first + days) / 7) * 7;
+
+            for (let i = 0; i < cells; i++) {
+                const dayNum = i - first + 1;
+                const cell = document.createElement('div');
+                cell.className = 'cal-cell';
+                if (dayNum < 1 || dayNum > days) { cell.classList.add('other'); grid.appendChild(cell); continue; }
+
+                const key = ymd(y, m, dayNum);
+                if (key === todayStr) cell.classList.add('today');
+
+                const dayEvents = data.events.filter(e => e.date === key);
+                if (dayEvents.length) cell.classList.add('k-' + dayEvents[0].kind);
+
+                const num = document.createElement('span');
+                num.className = 'num';
+                num.textContent = dayNum;
+                if (i % 7 === 0) num.style.color = '#dc2626';
+                cell.appendChild(num);
+
+                dayEvents.forEach(e => chip(cell, e.title, 'chip ' + (e.kind === 'Holiday' ? 'hol' : 'ev'), () => openEvent(e)));
+
+                data.items
+                    .filter(c => c.date === key && (!filter || c.teacher === filter))
+                    .forEach(c => {
+                        let cls = 'chip std';
+                        if (c.cancelled) cls = 'chip cancel';
+                        else if (role === 'Teacher') cls = c.mine ? 'chip mine' : 'chip busy';
+                        const label = c.start + ' ' + c.name + (c.room ? ' · ' + c.room : '');
+                        chip(cell, label, cls, () => openClass(c));
+                    });
+
+                grid.appendChild(cell);
+            }
+            renderCancellations();
+        }
+
+        function renderCancellations() {
+            const ul = $('cancelList');
+            ul.replaceChildren();
+            const list = data.items.filter(i => i.cancelled)
+                .sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+            if (!list.length) {
+                const li = document.createElement('li');
+                li.className = 'text-muted'; li.textContent = 'None';
+                ul.appendChild(li);
+                return;
+            }
+            list.forEach(c => {
+                const li = document.createElement('li');
+                li.className = 'mb-2';
+                li.textContent = c.date + ' ' + c.start + ' - ' + c.name + ' (' + c.teacher + ')' + (c.reason ? ': ' + c.reason : '');
+                ul.appendChild(li);
+            });
+        }
+
+        function line(label, value) {
+            const d = document.createElement('div');
+            const s = document.createElement('strong');
+            s.textContent = label + ': ';
+            d.appendChild(s);
+            d.appendChild(document.createTextNode(value || '-'));
+            $('mBody').appendChild(d);
+        }
+
+        function resetModal() {
+            $('mBody').replaceChildren();
+            $('mMsg').textContent = '';
+            $('reason').value = '';
+            ['cancelBox', 'btnCancel', 'btnRestore', 'btnDeleteEvent'].forEach(id => $(id).classList.add('d-none'));
+        }
+
+        function openClass(c) {
+            resetModal();
+            selected = { type: 'class', item: c };
+            $('mTitle').textContent = c.name;
+            line('Subject', c.subject);
+            line('Teacher', c.teacher);
+            line('Date', c.date);
+            line('Time', c.start + ' - ' + c.end);
+            line('Room', c.room);
+            line('Status', c.cancelled ? 'CANCELLED' + (c.reason ? ' (' + c.reason + ')' : '') : 'Scheduled');
+
+            const canAct = (isAdmin || (role === 'Teacher' && c.mine)) && c.date >= todayStr;
+            if (canAct && !c.cancelled) { $('cancelBox').classList.remove('d-none'); $('btnCancel').classList.remove('d-none'); }
+            if (canAct && c.cancelled) { $('btnRestore').classList.remove('d-none'); }
+            modal.show();
+        }
+
+        function openEvent(e) {
+            resetModal();
+            selected = { type: 'event', item: e };
+            $('mTitle').textContent = e.title;
+            line('Type', e.kind);
+            line('Date', e.date);
+            line('Notes', e.notes);
+            if (isAdmin) $('btnDeleteEvent').classList.remove('d-none');
+            modal.show();
+        }
+
+        $('btnCancel').addEventListener('click', async () => {
+            const c = selected.item;
+            const d = await post('@Url.Action("Cancel", "Calendar")', { classId: c.classId, date: c.date, reason: $('reason').value });
+            if (d.ok) { modal.hide(); load(); } else { $('mMsg').textContent = d.message; }
+        });
+        $('btnRestore').addEventListener('click', async () => {
+            const c = selected.item;
+            const d = await post('@Url.Action("Restore", "Calendar")', { classId: c.classId, date: c.date });
+            if (d.ok) { modal.hide(); load(); } else { $('mMsg').textContent = d.message; }
+        });
+        $('btnDeleteEvent').addEventListener('click', async () => {
+            const d = await post('@Url.Action("DeleteEvent", "Calendar")', { id: selected.item.id });
+            if (d.ok) { modal.hide(); load(); } else { $('mMsg').textContent = d.message; }
+        });
+
+        if ($('eventForm')) {
+            $('eventForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                const f = new FormData(e.target);
+                const d = await post('@Url.Action("AddEvent", "Calendar")', Object.fromEntries(f.entries()));
+                $('evMsg').className = 'small mt-2 ' + (d.ok ? 'text-success' : 'text-danger');
+                $('evMsg').textContent = d.ok ? 'Event added.' : d.message;
+                if (d.ok) { e.target.reset(); load(); }
+            });
+            $('teacherFilter').addEventListener('change', render);
+        }
+
+        $('prev').addEventListener('click', () => { cur = new Date(cur.getFullYear(), cur.getMonth() - 1, 1); load(); });
+        $('next').addEventListener('click', () => { cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1); load(); });
+        $('todayBtn').addEventListener('click', () => { cur = new Date(t0.getFullYear(), t0.getMonth(), 1); load(); });
+
+        load();
+    </script>
+}

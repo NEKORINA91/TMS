@@ -91,7 +91,8 @@ namespace TMS.Controllers
             if (c == null) return NotFound();
 
             bool hasHistory = await _db.Enrollments.AnyAsync(e => e.ClassId == id)
-                           || await _db.FeeCollections.AnyAsync(f => f.ClassId == id);
+               || await _db.FeeCollections.AnyAsync(f => f.ClassId == id)
+               || await _db.ClassCancellations.AnyAsync(x => x.ClassId == id);
 
             if (hasHistory)
             {
