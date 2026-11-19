@@ -14,7 +14,7 @@ namespace TMS.Controllers
         private readonly IWebHostEnvironment _env;
 
         private static readonly string[] Categories =
-            { "Utilities", "Maintenance", "Stationery", "Marketing", "Other" };
+            { "Utilities", "Maintenance", "Supplies", "Salaries", "Other" };
         private static readonly string[] AllowedExtensions = { ".pdf", ".jpg", ".jpeg", ".png" };
         private const long MaxReceiptBytes = 5 * 1024 * 1024;
 

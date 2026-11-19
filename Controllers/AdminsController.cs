@@ -57,7 +57,7 @@ namespace TMS.Controllers
                 Email = email,
                 PasswordHash = PasswordHelper.Hash(password),
                 Role = "Admin",
-                Admin = new TMS.Models.Domain.Admin { AdminType = "Admin" }
+                Admin = new TMS.Models.Domain.Admin { AdminType = "AcademicAdmin" }
             };
 
             _db.Users.Add(user);
