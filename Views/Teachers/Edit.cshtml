@@ -1,0 +1,30 @@
+﻿@using System.Globalization
+@model TMS.Models.Domain.Teacher
+@{
+    ViewData["Title"] = "Edit Teacher";
+    var rate = Model.CommissionRate.ToString("0.##", CultureInfo.InvariantCulture);
+    bool weekly = Model.PayoutFrequency == "Weekly";
+}
+
+<h2>Edit @Model.User.FullName (@Model.User.SystemId)</h2>
+
+<form asp-action="Edit" asp-route-id="@Model.TeacherId" method="post">
+    <div class="mb-3">
+        <label>Centre commission (%): the share of fees the centre keeps</label>
+        <input name="commissionRate" type="number" step="0.01" min="0" max="100"
+               value="@rate" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Payout frequency</label>
+        <select name="payoutFrequency" class="form-select">
+            <option selected="@(!weekly)">Monthly</option>
+            <option selected="@weekly">Weekly</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Bank account</label>
+        <input name="bankAccount" class="form-control" maxlength="100" value="@Model.BankAccount" />
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

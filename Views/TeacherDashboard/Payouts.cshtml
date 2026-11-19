@@ -1,0 +1,32 @@
+﻿@model List<TMS.Models.Domain.TeacherPayout>
+@{
+    ViewData["Title"] = "My Payouts";
+}
+
+<a asp-action="Index" class="btn btn-link ps-0">&larr; My classes</a>
+<h2 class="mb-3">My Payouts</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No payouts have been generated for you yet.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Month</th><th>Fees collected</th><th>Centre share</th><th>Your payout</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>@p.PeriodMonth.ToString("MMM yyyy")</td>
+                    <td>Rs. @p.GrossCollection.ToString("N2")</td>
+                    <td>Rs. @p.FacilityDeduction.ToString("N2")</td>
+                    <td>Rs. @p.NetPayout.ToString("N2")</td>
+                    <td>@p.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

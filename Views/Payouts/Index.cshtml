@@ -1,0 +1,79 @@
+﻿@model List<PayoutRow>
+@{
+    ViewData["Title"] = "Teacher Payouts";
+    var month = (DateTime)ViewBag.Month;
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<h2 class="mb-3">Teacher Payouts</h2>
+
+<form method="get" asp-action="Index" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="month" name="month" value="@month.ToString("yyyy-MM")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Show</button>
+    </div>
+</form>
+
+<form asp-action="Generate" method="post" class="mb-3">
+    <input type="hidden" name="month" value="@month.ToString("yyyy-MM")" />
+    <button type="submit" class="btn btn-primary">
+        Generate / update payouts for @month.ToString("MMMM yyyy")
+    </button>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Teacher</th>
+            <th>Fees collected</th>
+            <th>Centre rate</th>
+            <th>Centre share</th>
+            <th>Teacher payout</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.SystemId</td>
+                <td>@r.TeacherName</td>
+                <td>Rs. @r.Gross.ToString("N2")</td>
+                <td>@r.Rate.ToString("0.##")%</td>
+                <td>Rs. @r.Deduction.ToString("N2")</td>
+                <td>Rs. @r.Net.ToString("N2")</td>
+                <td>
+                    @if (r.Status == "Paid")
+                    {
+                        <span class="badge bg-success">Paid</span>
+                    }
+                    else if (r.Status == "Pending")
+                    {
+
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-secondary">Not generated</span>
+                    }
+                </td>
+                <td>
+                    @if (r.Status == "Pending" && r.PayoutId != null)
+                    {
+                        <form asp-action="MarkPaid" asp-route-id="@r.PayoutId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-success">Mark paid</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

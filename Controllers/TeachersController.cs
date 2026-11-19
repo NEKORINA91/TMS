@@ -72,5 +72,38 @@ namespace TMS.Controllers
             TempData["Success"] = $"Teacher created. Login ID: {user.SystemId}";
             return RedirectToAction(nameof(Index));
         }
+
+        // GET: /Teachers/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var t = await _db.Teachers.Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.TeacherId == id);
+            if (t == null) return NotFound();
+            return View(t);
+        }
+
+        // POST: /Teachers/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, decimal commissionRate,
+            string payoutFrequency, string bankAccount)
+        {
+            var t = await _db.Teachers.FindAsync(id);
+            if (t == null) return NotFound();
+
+            if (commissionRate < 0 || commissionRate > 100)
+            {
+                TempData["Success"] = null;
+                return RedirectToAction(nameof(Edit), new { id });
+            }
+
+            t.CommissionRate = commissionRate;
+            t.PayoutFrequency = payoutFrequency ?? t.PayoutFrequency;
+            t.BankAccount = bankAccount;
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Teacher updated.";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

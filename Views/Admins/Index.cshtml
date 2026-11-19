@@ -1,0 +1,50 @@
+﻿@model List<TMS.Models.Domain.Admin>
+@{
+    ViewData["Title"] = "Administrator Accounts";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<h2 class="mb-3">Administrator Accounts</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add Administrator</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Level</th><th>Status</th><th>Last login</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.User.SystemId</td>
+                <td>@a.User.FullName</td>
+                <td>@a.User.Email</td>
+                <td>@a.User.Role</td>
+                <td>
+                    @if (a.User.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-secondary">Inactive</span>
+                    }
+                </td>
+                <td>@(a.User.LastLoginAt?.ToString("dd MMM yyyy HH:mm") ?? "-")</td>
+                <td>
+                    @if (a.User.Role == "Admin")
+                    {
+                        <form asp-action="Toggle" asp-route-id="@a.User.UserId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                @(a.User.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

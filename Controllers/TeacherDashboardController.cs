@@ -35,6 +35,19 @@ namespace TMS.Controllers
             return View(classes);
         }
 
+        // GET: /TeacherDashboard/Payouts
+        public async Task<IActionResult> Payouts()
+        {
+            int teacherId = HttpContext.Session.GetSessionUser()?.ProfileId ?? 0;
+
+            var list = await _db.TeacherPayouts
+                .Where(p => p.TeacherId == teacherId)
+                .OrderByDescending(p => p.PeriodMonth)
+                .ToListAsync();
+
+            return View(list);
+        }
+
         // GET: /TeacherDashboard/Attendance?classId=1&date=2026-11-19  (read-only)
         public async Task<IActionResult> Attendance(int classId, DateTime? date)
         {
