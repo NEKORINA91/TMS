@@ -31,6 +31,13 @@
                 <td>@c.Room</td>
                 <td>Rs. @c.MonthlyFee.ToString("N2")</td>
                 <td>@c.Enrollments.Count(e => e.IsActive) / @c.MaxCapacity</td>
+                <td class="text-nowrap">
+                    <a asp-action="Edit" asp-route-id="@c.ClassId" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@c.ClassId" method="post" class="d-inline"
+                          onsubmit="return confirm('Delete this class?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

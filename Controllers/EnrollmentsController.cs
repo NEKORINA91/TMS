@@ -126,5 +126,92 @@ namespace TMS.Controllers
 
             return Json(list);
         }
+
+        private async Task LoadClassOptions()
+        {
+            ViewBag.Classes = await _db.Classes
+                .Where(c => c.IsActive)
+                .Select(c => new {
+                    c.ClassId,
+                    c.ClassName,
+                    c.MaxCapacity,
+                    Enrolled = c.Enrollments.Count(e => e.IsActive)
+                })
+                .ToListAsync();
+        }
+
+        // GET: /Enrollments/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var e = await _db.Enrollments
+                .Include(x => x.Student).ThenInclude(s => s.User)
+                .Include(x => x.Class)
+                .FirstOrDefaultAsync(x => x.EnrollmentId == id);
+            if (e == null) return NotFound();
+            await LoadClassOptions();
+            return View(e);
+        }
+
+        // POST: /Enrollments/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, int classId, bool isActive)
+        {
+            var e = await _db.Enrollments
+                .Include(x => x.Student).ThenInclude(s => s.User)
+                .Include(x => x.Class)
+                .FirstOrDefaultAsync(x => x.EnrollmentId == id);
+            if (e == null) return NotFound();
+
+            if (classId != e.ClassId)
+            {
+                string? error = null;
+                var target = await _db.Classes.FirstOrDefaultAsync(c => c.ClassId == classId && c.IsActive);
+
+                if (target == null)
+                    error = "Please choose a valid class.";
+                else if (await _db.AttendanceRecords.AnyAsync(a => a.EnrollmentId == id))
+                    error = "This enrolment already has attendance records, so it cannot be moved. Remove it and enrol the student again.";
+                else if (await _db.Enrollments.AnyAsync(x => x.StudentId == e.StudentId && x.ClassId == classId))
+                    error = "This student already has an enrolment in that class.";
+                else if (await _db.Enrollments.CountAsync(x => x.ClassId == classId && x.IsActive) >= target.MaxCapacity)
+                    error = "That class is full.";
+
+                if (error != null)
+                {
+                    ModelState.AddModelError("", error);
+                    await LoadClassOptions();
+                    return View(e);
+                }
+                e.ClassId = classId;
+            }
+
+            e.IsActive = isActive;
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "Enrollment updated.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Enrollments/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var e = await _db.Enrollments.FindAsync(id);
+            if (e == null) return NotFound();
+
+            if (await _db.AttendanceRecords.AnyAsync(a => a.EnrollmentId == id))
+            {
+                e.IsActive = false;
+                TempData["Success"] = "This enrolment has attendance records, so it was removed from the class but its history is kept.";
+            }
+            else
+            {
+                _db.Enrollments.Remove(e);
+                TempData["Success"] = "Enrollment deleted.";
+            }
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

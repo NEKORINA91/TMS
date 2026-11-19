@@ -1,0 +1,26 @@
+﻿@model TMS.Models.Domain.Enrollment
+@{
+    ViewData["Title"] = "Edit Enrollment";
+}
+<h2>Edit Enrollment</h2>
+<p><b>@Model.Student.User.SystemId</b> - @Model.Student.User.FullName</p>
+<div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+<form asp-action="Edit" asp-route-id="@Model.EnrollmentId" method="post">
+    <div class="mb-3">
+        <label>Class</label>
+        <select name="classId" class="form-select" required>
+            @foreach (var c in ViewBag.Classes)
+            {
+                <option value="@c.ClassId" selected="@((int)c.ClassId == Model.ClassId)">@c.ClassName (@c.Enrolled / @c.MaxCapacity)</option>
+            }
+        </select>
+    </div>
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="isActive" value="true" checked="@Model.IsActive" />
+        <input type="hidden" name="isActive" value="false" />
+        <label class="form-check-label">Active enrolment</label>
+    </div>
+    <button class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

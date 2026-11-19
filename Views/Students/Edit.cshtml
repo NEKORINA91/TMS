@@ -1,0 +1,21 @@
+﻿@model TMS.Models.Domain.Student
+@{
+    ViewData["Title"] = "Edit Student";
+}
+<h2>Edit @Model.User.FullName (@Model.User.SystemId)</h2>
+
+<form asp-action="Edit" asp-route-id="@Model.StudentId" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3"><label>Full name</label><input name="fullName" class="form-control" value="@Model.User.FullName" required /></div>
+    <div class="mb-3"><label>Email</label><input name="email" type="email" class="form-control" value="@Model.User.Email" required /></div>
+    <div class="mb-3"><label>Guardian phone</label><input name="guardianPhone" class="form-control" maxlength="20" value="@Model.GuardianPhone" /></div>
+    <div class="mb-3"><label>Address</label><input name="address" class="form-control" maxlength="300" value="@Model.Address" /></div>
+    <div class="mb-3"><label>New password (leave empty to keep the current one)</label><input name="newPassword" type="password" class="form-control" /></div>
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="isActive" value="true" checked="@Model.User.IsActive" />
+        <input type="hidden" name="isActive" value="false" />
+        <label class="form-check-label">Active (can log in)</label>
+    </div>
+    <button class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

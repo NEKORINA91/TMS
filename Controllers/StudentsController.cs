@@ -75,5 +75,79 @@ namespace TMS.Controllers
 
             return View(students);
         }
+
+        // GET: /Students/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var s = await _db.Students.Include(x => x.User).FirstOrDefaultAsync(x => x.StudentId == id);
+            if (s == null) return NotFound();
+            return View(s);
+        }
+
+        // POST: /Students/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, string fullName, string email,
+            string guardianPhone, string address, bool isActive, string? newPassword)
+        {
+            var s = await _db.Students.Include(x => x.User).FirstOrDefaultAsync(x => x.StudentId == id);
+            if (s == null) return NotFound();
+
+            email = (email ?? "").Trim().ToLower();
+            if (string.IsNullOrWhiteSpace(fullName) || email == "")
+            {
+                ModelState.AddModelError("", "Name and email are required.");
+                return View(s);
+            }
+            if (await _db.Users.AnyAsync(u => u.Email == email && u.UserId != s.UserId))
+            {
+                ModelState.AddModelError("", "That email belongs to another account.");
+                return View(s);
+            }
+            if (!string.IsNullOrEmpty(newPassword) && newPassword.Length < 6)
+            {
+                ModelState.AddModelError("", "A new password must be at least 6 characters.");
+                return View(s);
+            }
+
+            s.User.FullName = fullName.Trim();
+            s.User.Email = email;
+            s.User.IsActive = isActive;
+            if (!string.IsNullOrEmpty(newPassword))
+                s.User.PasswordHash = PasswordHelper.Hash(newPassword);
+            s.GuardianPhone = guardianPhone;
+            s.Address = address;
+
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "Student updated.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Students/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var s = await _db.Students.Include(x => x.User).FirstOrDefaultAsync(x => x.StudentId == id);
+            if (s == null) return NotFound();
+
+            bool hasHistory = await _db.Enrollments.AnyAsync(e => e.StudentId == id)
+                           || await _db.FeeCollections.AnyAsync(f => f.StudentId == id);
+
+            if (hasHistory)
+            {
+                s.User.IsActive = false;
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "This student has enrolment or fee records, so the account was deactivated instead of deleted.";
+            }
+            else
+            {
+                _db.Students.Remove(s);
+                _db.Users.Remove(s.User);
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "Student deleted.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

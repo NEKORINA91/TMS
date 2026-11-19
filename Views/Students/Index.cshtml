@@ -1,5 +1,9 @@
 ﻿@model List<TMS.Models.Domain.Student>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
 <h2>Students</h2>
 <a asp-action="Create" class="btn btn-primary mb-3">+ Add Student</a>
 
@@ -27,6 +31,13 @@
                 <td>@s.GuardianPhone</td>
                 <td>@s.EnrolledAt.ToString("dd MMM yyyy")</td>
                 <td>@(s.User.IsActive ? "Yes" : "No")</td>
+                <td class="text-nowrap">
+                    <a asp-action="Edit" asp-route-id="@s.StudentId" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@s.StudentId" method="post" class="d-inline"
+                          onsubmit="return confirm('Delete this student?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

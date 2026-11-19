@@ -76,8 +76,7 @@ namespace TMS.Controllers
         // GET: /Teachers/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var t = await _db.Teachers.Include(x => x.User)
-                .FirstOrDefaultAsync(x => x.TeacherId == id);
+            var t = await _db.Teachers.Include(x => x.User).FirstOrDefaultAsync(x => x.TeacherId == id);
             if (t == null) return NotFound();
             return View(t);
         }
@@ -85,24 +84,71 @@ namespace TMS.Controllers
         // POST: /Teachers/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, decimal commissionRate,
-            string payoutFrequency, string bankAccount)
+        public async Task<IActionResult> Edit(int id, string fullName, string email, string qualifications,
+            string shortBio, string contactNumber, decimal commissionRate, string payoutFrequency,
+            string bankAccount, bool isActive, string? newPassword)
         {
-            var t = await _db.Teachers.FindAsync(id);
+            var t = await _db.Teachers.Include(x => x.User).FirstOrDefaultAsync(x => x.TeacherId == id);
             if (t == null) return NotFound();
 
-            if (commissionRate < 0 || commissionRate > 100)
+            email = (email ?? "").Trim().ToLower();
+            if (string.IsNullOrWhiteSpace(fullName) || email == "" || commissionRate < 0 || commissionRate > 100)
             {
-                TempData["Success"] = null;
-                return RedirectToAction(nameof(Edit), new { id });
+                ModelState.AddModelError("", "Name, email and a commission between 0 and 100 are required.");
+                return View(t);
+            }
+            if (await _db.Users.AnyAsync(u => u.Email == email && u.UserId != t.UserId))
+            {
+                ModelState.AddModelError("", "That email belongs to another account.");
+                return View(t);
+            }
+            if (!string.IsNullOrEmpty(newPassword) && newPassword.Length < 6)
+            {
+                ModelState.AddModelError("", "A new password must be at least 6 characters.");
+                return View(t);
             }
 
+            t.User.FullName = fullName.Trim();
+            t.User.Email = email;
+            t.User.IsActive = isActive;
+            if (!string.IsNullOrEmpty(newPassword))
+                t.User.PasswordHash = PasswordHelper.Hash(newPassword);
+            t.Qualifications = qualifications;
+            t.ShortBio = shortBio;
+            t.ContactNumber = contactNumber;
             t.CommissionRate = commissionRate;
-            t.PayoutFrequency = payoutFrequency ?? t.PayoutFrequency;
+            t.PayoutFrequency = payoutFrequency ?? "Monthly";
             t.BankAccount = bankAccount;
-            await _db.SaveChangesAsync();
 
+            await _db.SaveChangesAsync();
             TempData["Success"] = "Teacher updated.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Teachers/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var t = await _db.Teachers.Include(x => x.User).FirstOrDefaultAsync(x => x.TeacherId == id);
+            if (t == null) return NotFound();
+
+            bool hasHistory = await _db.Classes.AnyAsync(c => c.TeacherId == id)
+                           || await _db.TeacherPayouts.AnyAsync(p => p.TeacherId == id);
+
+            if (hasHistory)
+            {
+                t.User.IsActive = false;
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "This teacher has classes or payouts, so the account was deactivated instead of deleted.";
+            }
+            else
+            {
+                _db.Teachers.Remove(t);
+                _db.Users.Remove(t.User);
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "Teacher deleted.";
+            }
             return RedirectToAction(nameof(Index));
         }
     }

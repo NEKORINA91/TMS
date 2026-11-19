@@ -83,5 +83,73 @@ namespace TMS.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // GET: /Admins/Edit/5   (id = UserId)
+        public async Task<IActionResult> Edit(int id)
+        {
+            var a = await _db.Admins.Include(x => x.User).FirstOrDefaultAsync(x => x.UserId == id);
+            if (a == null || a.User.Role != "Admin") return NotFound();
+            return View(a);
+        }
+
+        // POST: /Admins/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, string fullName, string email, string? newPassword)
+        {
+            var a = await _db.Admins.Include(x => x.User).FirstOrDefaultAsync(x => x.UserId == id);
+            if (a == null || a.User.Role != "Admin") return NotFound();
+
+            email = (email ?? "").Trim().ToLower();
+            if (string.IsNullOrWhiteSpace(fullName) || email == "")
+            {
+                ModelState.AddModelError("", "Name and email are required.");
+                return View(a);
+            }
+            if (await _db.Users.AnyAsync(u => u.Email == email && u.UserId != id))
+            {
+                ModelState.AddModelError("", "That email belongs to another account.");
+                return View(a);
+            }
+            if (!string.IsNullOrEmpty(newPassword) && newPassword.Length < 6)
+            {
+                ModelState.AddModelError("", "A new password must be at least 6 characters.");
+                return View(a);
+            }
+
+            a.User.FullName = fullName.Trim();
+            a.User.Email = email;
+            if (!string.IsNullOrEmpty(newPassword))
+                a.User.PasswordHash = PasswordHelper.Hash(newPassword);
+
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "Administrator updated.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Admins/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var a = await _db.Admins.Include(x => x.User).FirstOrDefaultAsync(x => x.UserId == id);
+            if (a == null || a.User.Role != "Admin") return NotFound();
+
+            bool hasExpenses = await _db.Expenses.AnyAsync(e => e.AdminId == a.AdminId);
+            if (hasExpenses)
+            {
+                a.User.IsActive = false;
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "This administrator has logged expenses, so the account was deactivated instead of deleted.";
+            }
+            else
+            {
+                _db.Admins.Remove(a);
+                _db.Users.Remove(a.User);
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "Administrator deleted.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

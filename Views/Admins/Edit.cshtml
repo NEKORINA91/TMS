@@ -1,0 +1,14 @@
+﻿@model TMS.Models.Domain.Admin
+@{
+    ViewData["Title"] = "Edit Administrator";
+}
+<h2>Edit @Model.User.FullName (@Model.User.SystemId)</h2>
+
+<form asp-action="Edit" asp-route-id="@Model.UserId" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3"><label>Full name</label><input name="fullName" class="form-control" value="@Model.User.FullName" required /></div>
+    <div class="mb-3"><label>Email</label><input name="email" type="email" class="form-control" value="@Model.User.Email" required /></div>
+    <div class="mb-3"><label>New password (leave empty to keep the current one)</label><input name="newPassword" type="password" class="form-control" /></div>
+    <button class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

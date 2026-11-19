@@ -42,6 +42,11 @@
                                 @(a.User.IsActive ? "Deactivate" : "Activate")
                             </button>
                         </form>
+                        <a asp-action="Edit" asp-route-id="@a.User.UserId" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@a.User.UserId" method="post" class="d-inline"
+                              onsubmit="return confirm('Delete this administrator?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
                     }
                 </td>
             </tr>
