@@ -1,0 +1,103 @@
+﻿@model TMS.Models.Domain.User
+@{
+    ViewData["Title"] = "My Profile";
+    var t = Model.Teacher;
+    var s = Model.Student;
+    var parts = Model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var init = string.Concat(parts.Take(2).Select(p => char.ToUpper(p[0])));
+}
+<style>
+    .profile-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .profile-initials {
+        background: #4f46e5;
+        color: #fff;
+        font-size: 2.2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+<div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+<h2 class="mb-3">My Profile</h2>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card p-4 text-center">
+            @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+            {
+                <img src="@Model.ProfilePhoto" class="profile-photo mx-auto mb-3" alt="Profile photo" />
+            }
+            else
+            {
+                <div class="profile-photo profile-initials mx-auto mb-3">@init</div>
+            }
+            <h5 class="mb-0">@Model.FullName</h5>
+            <div class="text-muted">@Model.SystemId &middot; @Model.Role</div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card p-4 mb-3">
+            <h5 class="mb-3">Details</h5>
+            <form asp-action="Save" method="post" enctype="multipart/form-data">
+                <div class="mb-3"><label class="form-label">Full name</label><input name="fullName" class="form-control" value="@Model.FullName" required /></div>
+                <div class="mb-3"><label class="form-label">Email</label><input name="email" type="email" class="form-control" value="@Model.Email" required /></div>
+
+                @if (t != null)
+                {
+                    <div class="mb-3"><label class="form-label">Contact number</label><input name="contactNumber" class="form-control" maxlength="20" value="@t.ContactNumber" /></div>
+                    <div class="mb-3"><label class="form-label">Qualifications</label><input name="qualifications" class="form-control" maxlength="200" value="@t.Qualifications" /></div>
+                    <div class="mb-3"><label class="form-label">Short bio</label><textarea name="shortBio" class="form-control" rows="3" maxlength="500">@t.ShortBio</textarea></div>
+                    <div class="mb-3"><label class="form-label">Bank account (for payouts)</label><input name="bankAccount" class="form-control" maxlength="100" value="@t.BankAccount" /></div>
+                }
+                @if (s != null)
+                {
+                    <div class="mb-3"><label class="form-label">Guardian phone</label><input name="guardianPhone" class="form-control" maxlength="20" value="@s.GuardianPhone" /></div>
+                    <div class="mb-3"><label class="form-label">Address</label><input name="address" class="form-control" maxlength="300" value="@s.Address" /></div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label">Profile photo (JPG or PNG, max 2 MB)</label>
+                    <input name="photo" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
+                    @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                    {
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" name="removePhoto" value="true" />
+                            <input type="hidden" name="removePhoto" value="false" />
+                            <label class="form-check-label">Remove my current photo</label>
+                        </div>
+                    }
+                </div>
+                <button class="btn btn-primary">Save changes</button>
+            </form>
+        </div>
+
+        <div class="card p-4">
+            <h5 class="mb-3">Change password</h5>
+            <form asp-action="ChangePassword" method="post">
+                <div class="mb-3"><label class="form-label">Current password</label><input name="currentPassword" type="password" class="form-control" required /></div>
+                <div class="mb-3"><label class="form-label">New password</label><input name="newPassword" type="password" class="form-control" required /></div>
+                <div class="mb-3"><label class="form-label">Confirm new password</label><input name="confirmPassword" type="password" class="form-control" required /></div>
+                <button class="btn btn-outline-primary">Change password</button>
+            </form>
+        </div>
+    </div>
+</div>

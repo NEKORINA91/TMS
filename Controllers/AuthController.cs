@@ -61,7 +61,8 @@ namespace TMS.Controllers
                 FullName  = user.FullName,
                 Email     = user.Email,
                 Role      = user.Role,
-                ProfileId = profileId
+                ProfileId = profileId,
+                PhotoPath = user.ProfilePhoto
             });
 
             user.LastLoginAt = DateTime.Now;

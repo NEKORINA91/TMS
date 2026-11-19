@@ -1,25 +1,44 @@
 ﻿@using TMS.Helpers
 @{
     var sessionUser = Context.Session.GetSessionUser();
-    bool isAdmin = sessionUser != null && (sessionUser.Role == "Admin" || sessionUser.Role == "SuperAdmin");
+    string role = sessionUser?.Role ?? "";
+    bool isAdmin = role == "Admin" || role == "SuperAdmin";
     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+    var act = ViewContext.RouteData.Values["action"]?.ToString();
 
-    // (controller name, label, icon) - add a new line here for each new page
-    var links = new[]
+    // (controller, action, label, icon)
+    var links = new List<(string c, string a, string label, string icon)>();
+    if (isAdmin)
     {
-        ("AdminDashboard", "Dashboard"),
-        ("Students",       "Students"),
-        ("Teachers",       "Teachers"),
-        ("Classes",        "Classes"),
-        ("FeeCollections", "Fee Collections"),
-        ("Expenses",       "Expenses"),
-        ("Enrollments",    "Enrollments"),
-        ("Payouts",        "Payouts"),
-        ("Reports",        "Reports"),
-        ("Financials",        "Financials"),
-        ("Attendance",     "Attendance"),
-        ("Calendar",       "Calendar")
-    };
+        links.Add(("AdminDashboard", "Index", "Dashboard", "🏠"));
+        links.Add(("Students", "Index", "Students", "🎓"));
+        links.Add(("Teachers", "Index", "Teachers", "👩‍🏫"));
+        links.Add(("Classes", "Index", "Classes", "📚"));
+        links.Add(("Enrollments", "Index", "Enrollments", "📝"));
+        links.Add(("Attendance", "Index", "Attendance", "✅"));
+        links.Add(("Calendar", "Index", "Calendar", "📅"));
+        links.Add(("FeeCollections", "Index", "Fee Collections", "💳"));
+        links.Add(("Expenses", "Index", "Expenses", "🧾"));
+        links.Add(("Financials", "Index", "Financials", "💰"));
+        links.Add(("Payouts", "Index", "Payouts", "💵"));
+        links.Add(("Reports", "Index", "Reports", "📊"));
+        if (role == "SuperAdmin") links.Add(("Admins", "Index", "Admin Accounts", "🛡️"));
+    }
+    else if (role == "Teacher")
+    {
+        links.Add(("TeacherDashboard", "Index", "Dashboard", "🏠"));
+        links.Add(("Calendar", "Index", "Calendar", "📅"));
+        links.Add(("TeacherDashboard", "Payouts", "My Payouts", "💵"));
+    }
+    else if (role == "Student")
+    {
+        links.Add(("StudentDashboard", "Index", "My Classes", "🏠"));
+        links.Add(("StudentDashboard", "MyQr", "My QR Code", "🔳"));
+        links.Add(("Calendar", "Index", "Calendar", "📅"));
+    }
+    if (sessionUser != null) links.Add(("Profile", "Index", "My Profile", "👤"));
+
+    string portal = isAdmin ? "Admin Suite" : (role == "Teacher" ? "Teacher Portal" : "Student Portal");
 
     string initials = "";
     if (sessionUser != null)
@@ -27,7 +46,6 @@
         var parts = sessionUser.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         initials = string.Concat(parts.Take(2).Select(p => char.ToUpper(p[0])));
     }
-
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -41,45 +59,43 @@
     <link rel="stylesheet" href="~/TMS.styles.css" asp-append-version="true" />
 </head>
 <body>
-    @if (isAdmin)
+    @if (sessionUser != null)
     {
         <div class="d-flex">
 
-            <!-- Sidebar: fixed on desktop, slide-out on phones -->
-            <div class="offcanvas-lg offcanvas-start border-end bg-white sidebar" tabindex="-1" id="sidebar"
+            <!-- Sidebar: fixed on desktop, slide-out (hamburger) on phones -->
+            <div class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="sidebar"
                  style="--bs-offcanvas-width: 260px;">
                 <div class="offcanvas-header d-lg-none">
                     <h5 class="offcanvas-title">TMS</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar"></button>
                 </div>
                 <div class="offcanvas-body d-flex flex-column p-3">
-                    <div class="d-none d-lg-block mb-3">
-                        <div class="fw-bold fs-5">TMS</div>
-                        <div class="text-muted small">Admin Suite</div>
+                    <div class="d-none d-lg-flex align-items-center gap-2 mb-4">
+                        <div class="brand-icon">T</div>
+                        <div>
+                            <div class="fw-bold text-white">TMS</div>
+                            <div class="small sidebar-sub">@portal</div>
+                        </div>
                     </div>
 
                     <ul class="nav nav-pills flex-column gap-1">
-                        @foreach (var (c, label) in links)
+                        @foreach (var l in links)
                         {
+                            bool active = ctrl == l.c && (act == l.a || (l.a == "Index" && !links.Any(x => x.c == l.c && x.a == act)));
                             <li class="nav-item">
-                                <a class="nav-link @(ctrl == c ? "active" : "")" asp-controller="@c" asp-action="Index">@label</a>
-                            </li>
-                        }
-                        @if (sessionUser.Role == "SuperAdmin")
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link @(ctrl == "Admins" ? "active" : "")" asp-controller="Admins" asp-action="Index">🛡️&nbsp; Admin Accounts</a>
+                                <a class="nav-link @(active ? "active" : "")" asp-controller="@l.c" asp-action="@l.a">
+                                    <span class="me-2">@l.icon</span>@l.label
+                                </a>
                             </li>
                         }
                     </ul>
-
-                    
                 </div>
             </div>
 
             <!-- Page area -->
             <div class="flex-grow-1 main-area">
-                <nav class="navbar bg-white border-bottom px-3">
+                <nav class="navbar bg-white border-bottom shadow-sm px-3">
                     <div class="d-flex align-items-center">
                         <button class="btn btn-outline-secondary d-lg-none me-2" type="button"
                                 data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Menu">
@@ -91,7 +107,14 @@
                     <div class="dropdown ms-auto">
                         <button class="avatar-btn" type="button" data-bs-toggle="dropdown"
                                 aria-expanded="false" title="@sessionUser.FullName">
-                            @initials
+                            @if (!string.IsNullOrEmpty(sessionUser.PhotoPath))
+                            {
+                                <img src="@sessionUser.PhotoPath" alt="" class="avatar-img" />
+                            }
+                            else
+                            {
+                                @initials
+                            }
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li class="px-3 py-2">
@@ -99,8 +122,9 @@
                                 <div class="small text-muted">@sessionUser.Role · @sessionUser.SystemId</div>
                             </li>
                             <li><hr class="dropdown-divider" /></li>
+                            <li><a class="dropdown-item" asp-controller="Profile" asp-action="Index">My profile</a></li>
                             <li>
-                                <form asp-controller="Auth" asp-action="Logout" method="post" class="px-3 pb-1">
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="px-3 pt-2 pb-1">
                                     <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Sign out</button>
                                 </form>
                             </li>
@@ -117,13 +141,6 @@
     {
         <nav class="navbar bg-white border-bottom mb-3 px-3">
             <a class="navbar-brand" href="/">TMS</a>
-            @if (sessionUser != null)
-            {
-                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-flex align-items-center gap-2">
-                    <span class="text-muted small">@sessionUser.FullName (@sessionUser.Role)</span>
-                    <button type="submit" class="btn btn-sm btn-outline-secondary">Sign out</button>
-                </form>
-            }
         </nav>
         <div class="container">
             <main role="main" class="pb-3">

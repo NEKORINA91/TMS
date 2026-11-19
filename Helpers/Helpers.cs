@@ -30,6 +30,7 @@ namespace TMS.Helpers
         public string Email     { get; set; }
         public string Role      { get; set; }
         public int    ProfileId { get; set; }
+        public string? PhotoPath { get; set; }
     }
 
     public static class SystemIdHelper

@@ -18,6 +18,8 @@ namespace TMS.Models.Domain
         public DateTime  CreatedAt    { get; set; } = DateTime.Now;
         public DateTime? LastLoginAt  { get; set; }
 
+        [MaxLength(300)] public string? ProfilePhoto { get; set; }
+
         public virtual Admin   Admin   { get; set; }
         public virtual Teacher Teacher { get; set; }
         public virtual Student Student { get; set; }
