@@ -1,0 +1,71 @@
+﻿@model List<TMS.Models.Domain.FeeCollection>
+@{
+    ViewData["Title"] = "My Dashboard";
+    var classes = (List<StudentClassRow>)ViewBag.Classes;
+}
+
+<h2 class="mb-3">My Classes and Attendance</h2>
+
+@if (!classes.Any())
+{
+    <div class="alert alert-info">You are not enrolled in any class yet.</div>
+}
+else
+{
+    <table class="table table-striped mb-4">
+        <thead>
+            <tr>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Present</th>
+                <th>Absent</th>
+                <th>Attendance</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in classes)
+            {
+                int total = c.Present + c.Absent;
+                string pct = total == 0 ? "-" : (c.Present * 100 / total) + "%";
+                <tr>
+                    <td>@c.ClassName</td>
+                    <td>@c.SubjectName</td>
+                    <td>@c.DayOfWeek</td>
+                    <td>@c.StartTime.ToString("hh\\:mm") - @c.EndTime.ToString("hh\\:mm")</td>
+                    <td>@c.Present</td>
+                    <td>@c.Absent</td>
+                    <td>@pct</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4 class="mb-3">My Fee Payments</h4>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No payments recorded yet.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Receipt</th><th>Class</th><th>Month</th><th>Amount</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var f in Model)
+            {
+                <tr>
+                    <td>@f.ReceiptNo</td>
+                    <td>@f.Class?.ClassName</td>
+                    <td>@f.PeriodMonth.ToString("MMM yyyy")</td>
+                    <td>Rs. @f.Amount.ToString("N2")</td>
+                    <td>@f.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

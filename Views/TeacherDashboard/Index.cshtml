@@ -1,0 +1,44 @@
+﻿@model List<TeacherClassRow>
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+
+<h2 class="mb-3">My Classes</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No classes are assigned to you yet.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Room</th>
+                <th>Students</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.ClassName</td>
+                    <td>@c.SubjectName</td>
+                    <td>@c.DayOfWeek</td>
+                    <td>@c.StartTime.ToString("hh\\:mm") - @c.EndTime.ToString("hh\\:mm")</td>
+                    <td>@c.Room</td>
+                    <td>@c.Enrolled</td>
+                    <td>
+                        <a asp-action="Attendance" asp-route-classId="@c.ClassId"
+                           class="btn btn-sm btn-outline-primary">View attendance</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

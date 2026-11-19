@@ -1,0 +1,53 @@
+﻿@model List<AttendanceRow>
+@{
+    ViewData["Title"] = "Class Attendance";
+    var day = (DateTime)ViewBag.Date;
+    int present = Model.Count(r => r.Status == "Present");
+    int absent = Model.Count(r => r.Status == "Absent");
+}
+
+<a asp-action="Index" class="btn btn-link ps-0">&larr; My classes</a>
+<h2 class="mb-3">@ViewBag.ClassName: Attendance</h2>
+
+<form method="get" asp-action="Attendance" class="row g-2 mb-3">
+    <input type="hidden" name="classId" value="@ViewBag.ClassId" />
+    <div class="col-auto">
+        <input type="date" name="date" value="@day.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Load</button>
+    </div>
+</form>
+
+<p class="text-muted">
+    Present: @present &nbsp; Absent: @absent &nbsp; Not marked: @(Model.Count - present - absent)
+</p>
+
+<table class="table table-striped">
+    <thead><tr><th>Student ID</th><th>Student</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.SystemId</td>
+                <td>@r.StudentName</td>
+                <td>
+                    @if (r.Status == "Present")
+                    {
+                        <span class="badge bg-success">Present</span>
+                    }
+                    else if (r.Status == "Absent")
+                    {
+
+                        <span class="badge bg-danger">Absent</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-secondary">Not marked</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
