@@ -32,7 +32,11 @@ namespace TMS.Controllers
                 .Where(e => e.LoggedAt >= monthStart && e.LoggedAt < nextMonth)
                 .SumAsync(e => (decimal?)e.Amount) ?? 0m;
 
-            ViewBag.PendingFees = await _db.FeeCollections.CountAsync(f => f.Status == "Pending");
+            ViewBag.PendingFees = await _db.Enrollments
+                .Where(e => e.IsActive && e.Class.IsActive && e.EnrolledDate < nextMonth)
+                .CountAsync(e => !e.Student.FeeCollections.Any(f =>
+                f.ClassId == e.ClassId && f.Status == "Paid"
+                && f.PeriodMonth >= monthStart && f.PeriodMonth < nextMonth));
 
             ViewBag.RecentFees = await _db.FeeCollections
                 .Include(f => f.Student).ThenInclude(s => s.User)

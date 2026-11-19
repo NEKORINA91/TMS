@@ -42,3 +42,17 @@
 
     <button type="submit" class="btn btn-primary">Record Payment</button>
 </form>
+
+@section Scripts {
+    <script>
+        const p = new URLSearchParams(location.search);
+        const set = (name, key) => {
+            const el = document.querySelector('[name=' + name + ']');
+            if (el && p.get(key)) el.value = p.get(key);
+        };
+        set('studentId', 'studentId');
+        set('classId', 'classId');
+        set('amount', 'amount');
+        set('periodMonth', 'month');
+    </script>
+}

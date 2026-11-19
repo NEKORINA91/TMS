@@ -98,6 +98,67 @@ namespace TMS.Controllers
             await _db.SaveChangesAsync();
             TempData["Success"] = "Attendance saved.";
             return RedirectToAction(nameof(Index), back);
+      
+        
+     
+        }
+
+        // GET: /Attendance/Scan
+        public async Task<IActionResult> Scan()
+        {
+            ViewBag.Classes = await _db.Classes
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.ClassName)
+                .Select(c => new { c.ClassId, c.ClassName }).ToListAsync();
+            ViewBag.Date = DateTime.Today;
+            return View();
+        }
+
+        // POST: /Attendance/ScanMark  (called by the scan page)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ScanMark(int classId, DateTime date, string code)
+        {
+            var day = date.Date;
+            if (day > DateTime.Today)
+                return Json(new { ok = false, message = "Future dates are not allowed." });
+
+            // the QR text is "STD-001|Student Name", so only the part before | is used
+            string systemId = (code ?? "").Split('|')[0].Trim();
+
+            var enrollment = await _db.Enrollments
+                .Include(e => e.Student).ThenInclude(s => s.User)
+                .FirstOrDefaultAsync(e => e.ClassId == classId && e.IsActive
+                                          && e.Student.User.SystemId == systemId);
+
+            if (enrollment == null)
+                return Json(new { ok = false, message = $"{systemId} is not enrolled in this class." });
+
+            var record = await _db.AttendanceRecords
+                .FirstOrDefaultAsync(a => a.EnrollmentId == enrollment.EnrollmentId && a.ClassDate == day);
+
+            string markedBy = HttpContext.Session.GetSessionUser()?.SystemId ?? "Admin";
+
+            if (record == null)
+            {
+                _db.AttendanceRecords.Add(new AttendanceRecord
+                {
+                    EnrollmentId = enrollment.EnrollmentId,
+                    ClassDate = day,
+                    Status = "Present",
+                    MarkedBy = markedBy,
+                    MarkedAt = DateTime.Now
+                });
+            }
+            else
+            {
+                record.Status = "Present";
+                record.MarkedBy = markedBy;
+                record.MarkedAt = DateTime.Now;
+            }
+
+            await _db.SaveChangesAsync();
+            return Json(new { ok = true, name = enrollment.Student.User.FullName, message = "marked Present" });
         }
     }
 }

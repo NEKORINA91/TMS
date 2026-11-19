@@ -1,0 +1,53 @@
+﻿@using System.Globalization
+@model List<FeeDueRow>
+@{
+    ViewData["Title"] = "Fees Due";
+    var month = (DateTime)ViewBag.Month;
+    decimal total = Model.Sum(r => r.AmountDue);
+}
+
+<h2 class="mb-3">Fees Due</h2>
+
+<form method="get" asp-action="Due" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="month" name="month" value="@month.ToString("yyyy-MM")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Show</button>
+    </div>
+</form>
+
+<p class="text-muted">
+    @Model.Count unpaid for @month.ToString("MMMM yyyy") &middot; Total Rs. @total.ToString("N2")
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success">All fees are paid for this month.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Student ID</th><th>Student</th><th>Class</th><th>Amount due</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                var amt = r.AmountDue.ToString("0.00", CultureInfo.InvariantCulture);
+                var m = month.ToString("yyyy-MM");
+                <tr>
+                    <td>@r.SystemId</td>
+                    <td>@r.StudentName</td>
+                    <td>@r.ClassName</td>
+                    <td>Rs. @r.AmountDue.ToString("N2")</td>
+                    <td>
+                        <a asp-action="Create" asp-route-studentId="@r.StudentId"
+                           asp-route-classId="@r.ClassId" asp-route-amount="@amt"
+                           asp-route-month="@m" class="btn btn-sm btn-primary">Record payment</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

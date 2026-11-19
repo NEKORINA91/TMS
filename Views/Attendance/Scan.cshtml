@@ -1,0 +1,96 @@
+﻿@{
+    ViewData["Title"] = "Scan Attendance";
+    var classes = ViewBag.Classes;
+    var day = (DateTime)ViewBag.Date;
+}
+
+<h2 class="mb-3">Scan Attendance</h2>
+<p><a asp-action="Index">&larr; Manual attendance</a></p>
+
+<form id="tokenForm">@Html.AntiForgeryToken()</form>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-5">
+        <select id="classId" class="form-select">
+            <option value="">-- Select Class --</option>
+            @foreach (var c in classes)
+            {
+                <option value="@c.ClassId">@c.ClassName</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="date" id="scanDate" class="form-control"
+               value="@day.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div id="reader" style="width:100%;max-width:420px;"></div>
+        <div class="input-group mt-3" style="max-width:420px;">
+            <input type="text" id="manualCode" class="form-control"
+                   placeholder="Type or scan a Student ID, then press Enter" />
+            <button id="manualBtn" class="btn btn-outline-primary" type="button">Mark</button>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h5>Scans</h5>
+        <ul id="log" class="list-group"></ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        const token = document.querySelector('#tokenForm input[name="__RequestVerificationToken"]').value;
+        const logEl = document.getElementById('log');
+        let lastCode = '';
+        let lastTime = 0;
+
+        function addLog(ok, text) {
+        const li = document.createElement('li');
+        li.className = 'list-group-item ' + (ok ? 'list-group-item-success' : 'list-group-item-danger');
+        li.textContent = text;
+        logEl.prepend(li);
+        }
+
+        async function mark(code) {
+        const classId = document.getElementById('classId').value;
+        const date = document.getElementById('scanDate').value;
+        if (!classId) { addLog(false, 'Select a class first.'); return; }
+
+        const res = await fetch('@Url.Action("ScanMark", "Attendance")', {
+        method: 'POST',
+        headers: { 'RequestVerificationToken': token },
+        body: new URLSearchParams({ classId: classId, date: date, code: code })
+        });
+        const data = await res.json();
+        addLog(data.ok, data.ok ? data.name + ' - ' + data.message : data.message);
+        }
+
+        function onScan(text) {
+        const now = Date.now();
+        if (text === lastCode && now - lastTime < 3000) return;   // ignore repeat reads
+        lastCode = text;
+        lastTime = now;
+        mark(text);
+        }
+
+        if (window.Html5QrcodeScanner) {
+        const scanner = new Html5QrcodeScanner('reader', { fps: 10, qrbox: 250 }, false);
+        scanner.render(onScan, function () { });
+        } else {
+        document.getElementById('reader').textContent =
+        'The camera scanner could not load. Use the box below instead.';
+        }
+
+        document.getElementById('manualBtn').addEventListener('click', function () {
+        const box = document.getElementById('manualCode');
+        if (box.value.trim()) { mark(box.value.trim()); box.value = ''; }
+        });
+        document.getElementById('manualCode').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('manualBtn').click(); }
+        });
+    </script>
+}

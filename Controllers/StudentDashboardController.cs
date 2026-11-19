@@ -39,6 +39,16 @@ namespace TMS.Controllers
                 .ToListAsync();
 
             return View(fees);
+
+        }
+        // GET: /StudentDashboard/MyQr
+        public IActionResult MyQr()
+        {
+            var user = HttpContext.Session.GetSessionUser();
+            ViewBag.SystemId = user?.SystemId;
+            ViewBag.FullName = user?.FullName;
+            ViewBag.Code = $"{user?.SystemId}|{user?.FullName}";
+            return View();
         }
     }
 }

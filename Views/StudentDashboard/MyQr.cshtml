@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "My QR Code";
+}
+
+<a asp-action="Index" class="btn btn-link ps-0">&larr; My dashboard</a>
+<h2 class="mb-3">My Attendance QR Code</h2>
+
+<div class="card p-4 text-center" style="max-width:340px;">
+    <div id="qr" class="d-flex justify-content-center mb-3"></div>
+    <div class="fw-bold">@ViewBag.FullName</div>
+    <div class="text-muted">@ViewBag.SystemId</div>
+</div>
+<p class="text-muted mt-3">Show this code to the administrator when you arrive at class.</p>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        const code = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.Code));
+        new QRCode(document.getElementById('qr'), { text: code, width: 220, height: 220 });
+    </script>
+}

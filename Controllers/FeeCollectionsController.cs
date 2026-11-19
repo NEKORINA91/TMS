@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TMS.Models.Domain;
 using TMS.DAL;
 using TMS.Helpers;
+using TMS.Models;
 
 namespace TMS.Controllers
 {
@@ -26,6 +27,35 @@ namespace TMS.Controllers
                 .ToListAsync();
 
             return View(fees);
+        }
+
+        // GET: /FeeCollections/Due?month=2026-11
+        public async Task<IActionResult> Due(DateTime? month)
+        {
+            var m = month ?? DateTime.Today;
+            var monthStart = new DateTime(m.Year, m.Month, 1);
+            var monthEnd = monthStart.AddMonths(1);
+
+            var rows = await _db.Enrollments
+                .Where(e => e.IsActive && e.Class.IsActive && e.EnrolledDate < monthEnd)
+                .Where(e => !e.Student.FeeCollections.Any(f =>
+                        f.ClassId == e.ClassId
+                        && f.Status == "Paid"
+                        && f.PeriodMonth >= monthStart
+                        && f.PeriodMonth < monthEnd))
+                .OrderBy(e => e.Student.User.FullName)
+                .Select(e => new FeeDueRow
+                {
+                    StudentId = e.StudentId,
+                    ClassId = e.ClassId,
+                    StudentName = e.Student.User.FullName,
+                    SystemId = e.Student.User.SystemId,
+                    ClassName = e.Class.ClassName,
+                    AmountDue = e.Class.MonthlyFee
+                }).ToListAsync();
+
+            ViewBag.Month = monthStart;
+            return View(rows);
         }
 
         // GET: /FeeCollections/Create
