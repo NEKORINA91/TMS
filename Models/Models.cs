@@ -156,7 +156,7 @@ namespace TMS.Models.Domain
         [Required, MaxLength(300)] public string Description { get; set; }
         [Column(TypeName = "decimal(10,2)")] public decimal Amount { get; set; }
         [Required, MaxLength(50)] public string Category    { get; set; }
-        [MaxLength(500)]          public string ReceiptPath { get; set; }
+        [MaxLength(500)]          public string? ReceiptPath { get; set; }
         public DateTime LoggedAt { get; set; } = DateTime.Now;
 
         public virtual Admin Admin { get; set; }
