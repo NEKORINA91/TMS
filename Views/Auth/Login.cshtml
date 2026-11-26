@@ -207,7 +207,63 @@
             line-height: 1.8;
         }
         .hint strong { color: #4f46e5; }
+
+            /* ── PHONES / SMALL SCREENS ── */
+            @@media (max-width: 800px) {
+                body {
+                    flex-direction: column;
+                    height: auto;
+                    min-height: 100vh;
+                }
+
+                .left {
+                    width: 100%;
+                    padding: 28px 24px;
+                    justify-content: flex-start;
+                }
+
+                    .left h1 {
+                        font-size: 22px;
+                        margin-bottom: 8px;
+                    }
+
+                    .left p {
+                        font-size: 13px;
+                        max-width: none;
+                    }
+
+                .left-divider {
+                    margin-top: 16px;
+                }
+
+                .brand {
+                    margin-bottom: 20px;
+                }
+
+                .orb {
+                    display: none;
+                }
+
+                .right {
+                    width: 100%;
+                    padding: 28px 22px 36px;
+                    flex: 1;
+                }
+
+                    .right h2 {
+                        font-size: 24px;
+                    }
+
+                    .right .subtitle {
+                        margin-bottom: 22px;
+                    }
+                /* 16px stops the phone zooming in when you tap a field */
+                input[type=text], input[type=password] {
+                    font-size: 16px;
+                }
+            }
     </style>
+
 </head>
 <body>
 
