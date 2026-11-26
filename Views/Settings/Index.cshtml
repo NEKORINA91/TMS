@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Institute Settings";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<h2>Institute Settings</h2>
+<p class="text-muted">This name appears in the sidebar, the page titles and the reports.</p>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label>Institute name</label>
+        <input name="name" class="form-control" maxlength="100" value="@Institute.Name" required />
+    </div>
+    <div class="mb-3">
+        <label>Contact phone (shown on the forgot-password page)</label>
+        <input name="phone" class="form-control" maxlength="30" value="@Institute.Phone" />
+    </div>
+    <div class="mb-3">
+        <label>Contact email</label>
+        <input name="email" type="email" class="form-control" maxlength="100" value="@Institute.Email" />
+    </div>
+    <button class="btn btn-primary">Save</button>
+</form>

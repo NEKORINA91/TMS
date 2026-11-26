@@ -20,6 +20,8 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddSingleton<TMS.Helpers.InstituteSettings>();
+
 builder.Services.AddHostedService<TMS.Helpers.AttendanceAutoAbsentService>();
 
 var app = builder.Build();

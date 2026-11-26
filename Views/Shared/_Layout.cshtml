@@ -23,6 +23,7 @@
         links.Add(("Payouts", "Index", "Payouts", "💵"));
         links.Add(("Reports", "Index", "Reports", "📊"));
         if (role == "SuperAdmin") links.Add(("Admins", "Index", "Admin Accounts", "🛡️"));
+        if (role == "SuperAdmin") links.Add(("Settings", "Index", "Institute Settings", "⚙️"));
     }
     else if (role == "Teacher")
     {
@@ -52,7 +53,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TMS</title>
+    <title>@ViewData["Title"] - @Institute.Name</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -67,14 +68,14 @@
             <div class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="sidebar"
                  style="--bs-offcanvas-width: 260px;">
                 <div class="offcanvas-header d-lg-none">
-                    <h5 class="offcanvas-title">TMS</h5>
+                    <h5 class="offcanvas-title">@Institute.Name</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar"></button>
                 </div>
                 <div class="offcanvas-body d-flex flex-column p-3">
                     <div class="d-none d-lg-flex align-items-center gap-2 mb-4">
                         <div class="brand-icon">T</div>
                         <div>
-                            <div class="fw-bold text-white">TMS</div>
+                            <div class="fw-bold text-white text-truncate" style="max-width:160px">@Institute.Name</div>
                             <div class="small sidebar-sub">@portal</div>
                         </div>
                     </div>
@@ -101,7 +102,7 @@
                                 data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Menu">
                             ☰
                         </button>
-                        <span class="navbar-brand mb-0 d-lg-none">TMS</span>
+                        <span class="navbar-brand mb-0 d-lg-none">@Institute.Name</span>
                     </div>
 
                     <div class="dropdown ms-auto">
